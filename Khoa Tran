@@ -1,0 +1,418 @@
+%====================================================
+% CS 4632 – Modeling and Simulation
+% Milestone 1: Project Foundation
+% ACM-style LaTeX (Overleaf compatible)
+%====================================================
+\documentclass[sigconf]{acmart}
+
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{float}
+\usepackage{xcolor}
+
+\title{Integrating Warehouse Logistics with Crowd Dynamics Analysis}
+
+\author{Khoa Tran}
+\affiliation{%
+  \institution{CS 4632 -- Modeling and Simulation}
+}
+
+\begin{document}
+\begin{abstract}
+This project proposes a custom-built development simulation implemented in Python that integrates warehouse logistics optimization with crowd dynamics analysis. The simulation models two interconnected systems: (1) an autonomous mobile robot (AMR) network for warehouse order fulfillment, and (2) a pedestrian crowd evacuation scenario that shares the same spatial environment. The framework utilizes agent-based modeling, discrete-event simulation, and path-finding algorithms to analyze how logistics operations interact with emergency evacuation protocols. Performance metrics from both domains are collected to evaluate system resilience and operational efficiency under normal and emergency conditions.
+\end{abstract}
+
+\maketitle
+
+\section{Project Overview}
+
+\subsection{Domain}
+The hybrid project operates in two interconnected domains: \textbf{Supply Chain Logistics} and \textbf{Crowd Dynamics}. The primary domain is an automated warehouse where AMRs fulfill orders \cite{boysen2019warehouse}, while the secondary domain involves simulating pedestrian evacuation scenarios within the same warehouse environment \cite{helbing1995social}. This dual-domain approach allows for analysis of how logistics operations might be affected during emergency situations and how evacuation protocols can be optimized considering operational constraints.
+
+\subsection{Problem Statement}
+This hybrid simulation addresses three core research questions:
+\begin{itemize}
+    \item How can warehouse layout designs simultaneously optimize for both efficient robotic logistics and safe pedestrian evacuation \cite{shaheen2019human}?
+    \item What are the trade-offs between robot routing efficiency and pedestrian safety during emergency evacuations \cite{pan2007human}?
+    \item How do different inventory placement strategies affect both order fulfillment times and evacuation flow rates \cite{law2015simulation}?
+    \item What coordination mechanisms are needed between robotic systems and human occupants during emergency scenarios \cite{macal2010tutorial}?
+\end{itemize}
+
+\subsection{Scope}
+
+\textbf{I will simulate (Warehouse Logistics):}
+\begin{itemize}
+    \item Agent-based modeling of AMRs with task queues and battery management \cite{wurman2008coordinating}
+    \item Order generation and decomposition into picking tasks \cite{law2015simulation}
+    \item Inventory management with continuous-review policies \cite{law2015simulation}
+    \item Path-finding algorithms (A*) for robot navigation \cite{hart1968formal}
+    \item Task assignment heuristics based on proximity and load balancing \cite{boysen2019warehouse}
+    \item Performance metrics: throughput, robot utilization, fulfillment time \cite{law2015simulation}
+\end{itemize}
+
+\textbf{I will simulate (Crowd Dynamics):}
+\begin{itemize}
+    \item Agent-based modeling of pedestrians with varying speeds and behaviors \cite{helbing1995social}
+    \item Social Force Model implementation for crowd interactions \cite{helbing1995social}
+    \item Emergency exit selection algorithms \cite{pan2007human}
+    \item Obstacle avoidance and collision detection \cite{reynolds1999steering}
+    \item Evacuation metrics: total evacuation time, congestion analysis, flow rates \cite{gwynne1999review}
+\end{itemize}
+
+\textbf{I will simulate Interaction Features:}
+\begin{itemize}
+    \item Shared spatial environment between robots and pedestrians \cite{shaheen2019human}
+    \item Dynamic obstacle generation based on inventory placement
+    \item Priority rules for robot-pedestrian interactions \cite{shaheen2019human}
+    \item Emergency mode switching for logistics operations
+\end{itemize}
+
+\textbf{I will not simulate:}
+\begin{itemize}
+    \item Physical robot hardware integration
+    \item Complex psychological factors in evacuation behavior
+    \item Real-time communication delays between agents
+    \item Weather or environmental factors affecting movement
+\end{itemize}
+
+\section{System Description}
+
+\subsection{System Components}
+\begin{itemize}
+    \item \textbf{Environment}: A unified grid-based representation of the warehouse space that serves both robots and pedestrians, containing storage locations, aisles, exits, obstacles, and workstations \cite{shaheen2019human}.
+    
+    \item \textbf{Logistics Agents}:
+    \begin{itemize}
+        \item \textit{AMR Robots}: Autonomous agents with attributes: position, velocity, battery level, current task, operational mode (normal/emergency) \cite{wurman2008coordinating}.
+        \item \textit{Inventory Manager}: Tracks item quantities, storage locations, and triggers restocking based on (Q, r) policy \cite{law2015simulation}.
+        \item \textit{Order Dispatcher}: Generates orders and assigns tasks to robots using heuristic optimization \cite{boysen2019warehouse}.
+    \end{itemize}
+    
+    \item \textbf{Crowd Agents}:
+    \begin{itemize}
+        \item \textit{Pedestrians}: Human agents with attributes: position, desired velocity, stress level, familiarity with environment, preferred exit \cite{helbing1995social}.
+        \item \textit{Crowd Controller}: Manages global evacuation strategies and exit assignments \cite{gwynne1999review}.
+    \end{itemize}
+    
+    \item \textbf{Simulation Engine}: Core Python-based discrete-event simulator that manages:
+    \begin{itemize}
+        \item Global simulation clock and event scheduling \cite{law2015simulation}
+        \item Agent state updates at each time step \cite{macal2010tutorial}
+        \item Inter-agent interactions and collision resolution \cite{shaheen2019human}
+        \item Data collection for performance metrics \cite{law2015simulation}
+\end{itemize}
+\end{itemize}
+
+\subsection{System Dynamics}
+The simulation operates in discrete time steps with two possible modes:
+\begin{itemize}
+    \item \textbf{Normal Mode}: Robots perform order fulfillment tasks while pedestrians move independently through the warehouse. Orders arrive stochastically, and robots navigate to pick items and deliver to packing stations \cite{wurman2008coordinating}.
+    \item \textbf{Emergency Mode}: Triggered either randomly or based on user input. Robots immediately move to designated safe positions or continue essential operations at reduced speed. Pedestrians switch to evacuation behavior, seeking exits while avoiding robots and other pedestrians \cite{pan2007human}.
+\end{itemize}
+
+Both agent types share the same spatial environment, creating dynamic interactions where robots must avoid pedestrians, and pedestrians must navigate around both stationary inventory and moving robots \cite{shaheen2019human}.
+
+\subsection{Core Models and Algorithms}
+
+\subsubsection{Path-finding and Navigation}
+The system implements a unified A* algorithm for path-finding that both robots and pedestrians can use \cite{hart1968formal}:
+
+\subsubsection{Task Assignment and Scheduling}
+Order fulfillment tasks are assigned to robots using heuristic optimization strategies, such as nearest-robot assignment or load-balancing rules, to minimize total travel distance and order completion time.\cite{boysen2019warehouse}:
+
+\subsubsection{Inventory Management with Emergency Prioritization}
+The inventory system adapts during emergency conditions using principles from \cite{law2015simulation}:
+
+\subsection{Assumptions}
+\begin{itemize}
+    \item The warehouse environment is represented as a 2D grid with discrete cells \cite{law2015simulation}
+    \item Robots and pedestrians move at constant speeds (with pedestrians having slight variations) \cite{helbing1995social}
+    \item Communication between agents and the central controller is instantaneous \cite{macal2010tutorial}
+    \item Emergency events are either randomly generated or user-triggered \cite{pan2007human}
+    \item All agents have perfect knowledge of the environment layout \cite{law2015simulation}
+    \item Battery consumption for robots is linear with distance traveled \cite{wurman2008coordinating}
+\end{itemize}
+
+\section{Implementation Approach}
+
+
+\subsection{Programming Language}
+The simulation will be implemented entirely in Python 3.8+ using the following libraries and methodologies \cite{law2015simulation}:
+
+\subsection{Development Environment}
+\begin{itemize}
+    \item Python classes for robots, pedestrians and environment \cite{macal2010tutorial}
+    \item Visual Studio IDE for display control panel
+    \item Custom A* implementation with configurable heuristics \cite{hart1968formal}
+\end{itemize}
+
+\subsection{Simulation Type}
+Custom discrete-event simulation framework \cite{law2015simulation}
+
+\subsection{Data Collection}
+Num-Py and Pandas for metric calculation and analysis \cite{law2015simulation}
+
+\section{Literature Review}
+
+The hybrid simulation draws from several research areas:
+
+\subsection{Warehouse Logistics and Robotics}
+\textbf{Boysen et al. (2019)} provide a comprehensive survey of warehouse automation and robotized storage systems, covering different types of AMR systems and their performance characteristics \cite{boysen2019warehouse}. Their classification of warehouse automation systems informs our robot task assignment heuristics.
+
+\textbf{Wurman et al. (2008)} discuss the Kiva warehouse management system, which inspired many modern AMR-based warehouses \cite{wurman2008coordinating}. Their work on multi-agent coordination in warehouse environments provides the foundation for our robot-agent design.
+
+\textbf{Law (2015)} provides comprehensive coverage of simulation modeling principles, including discrete-event simulation, agent-based modeling, and inventory system simulation \cite{law2015simulation}. This text serves as the primary methodological foundation for our simulation implementation.
+
+\subsection{Crowd Dynamics and Evacuation}
+\textbf{Helbing and Molnár (1995)} introduced the Social Force Model, which forms the basis for our pedestrian movement simulation \cite{helbing1995social}. Their mathematical formulation of social forces between pedestrians is implemented in our crowd dynamics module.
+
+\textbf{Pan et al. (2007)} extend crowd behavior models to include social behaviors during evacuations \cite{pan2007human}. Their work on exit selection strategies and group behaviors during emergencies informs our evacuation algorithms.
+
+\textbf{Gwynne et al. (1999)} provide a comprehensive review of evacuation modeling techniques, including agent-based approaches and performance metrics \cite{gwynne1999review}. Their taxonomy of evacuation models guides our simulation design.
+
+\textbf{Reynolds (1999)} developed steering behaviors for autonomous characters, which complement the Social Force Model for local navigation and obstacle avoidance \cite{reynolds1999steering}.
+
+\subsection{Path-finding and Navigation}
+\textbf{Hart et al. (1968)} formalized the A* search algorithm, which provides the foundation for our path-finding implementation \cite{hart1968formal}. Their heuristic search approach enables efficient navigation in complex warehouse environments.
+
+\subsection{Hybrid Systems and Multi-Agent Simulation}
+\textbf{Macal and North (2010)} provide guidance on agent-based modeling and simulation, particularly for complex systems involving multiple agent types \cite{macal2010tutorial}. Their methodology for agent-based simulation design informs our overall system architecture.
+
+\textbf{Shaheen et al. (2019)} discuss the integration of human and robotic agents in shared workspaces, informing our interaction models between robots and pedestrians \cite{shaheen2019human}. Their work on safety protocols in human-robot collaborative environments guides our emergency response mechanisms.
+
+\section{UML Diagrams}
+
+
+\subsection{Class Diagram (Simplified)}
+\begin{figure}
+    [H]
+    \includegraphics[width=0.5\linewidth]{UML Class Diagram_ Simulation System.pdf}
+    \caption{UML Diagram}
+    \label{fig:placeholder}
+\end{figure}
+\begin{lstlisting}
+@startuml
+class SimulationEngine {
+    -current_time: float
+    -time_step: float
+    -emergency_mode: bool
+    +run()
+    +step()
+    +trigger_emergency()
+    +end_emergency()
+}
+
+class EnvironmentGrid {
+    -grid: List[List[Cell]]
+    -width: int
+    -height: int
+    +get_cell(x, y)
+    +is_obstructed(x, y)
+    +get_neighbors(x, y)
+}
+
+class Robot {
+    -id: int
+    -position: tuple
+    -battery: float
+    -task_queue: List[Task]
+    -state: RobotState
+    +move_to(target)
+    +pick_item(item_id)
+    +charge()
+}
+
+class Pedestrian {
+    -id: int
+    -position: tuple
+    -desired_velocity: float
+    -stress_level: float
+    -preferred_exit: int
+    +calculate_force(neighbors, obstacles)
+    +choose_exit(exits)
+    +move()
+}
+
+class TaskDispatcher {
+    -task_queue: List[Task]
+    -available_robots: List[Robot]
+    -heuristic: str
+    +assign_tasks()
+    +add_task(task)
+    +remove_robot(robot)
+}
+
+class InventoryManager {
+    -inventory: Dict[str, int]
+    -reorder_points: Dict[str, int]
+    -emergency_mode: bool
+    +update_inventory(item_id, change)
+    +trigger_reorder(item_id)
+    +set_emergency_mode(enabled)
+}
+
+SimulationEngine "1" *-- "1" EnvironmentGrid
+SimulationEngine "1" *-- "*" Robot
+SimulationEngine "1" *-- "*" Pedestrian
+SimulationEngine "1" *-- "1" TaskDispatcher
+SimulationEngine "1" *-- "1" InventoryManager
+Robot "1" --> "0..*" Task
+TaskDispatcher "1" --> "*" Task
+EnvironmentGrid "1" --> "*" Cell
+Pedestrian "1" --> "1" Exit
+@enduml
+\end{lstlisting}
+
+\subsection{Sequence Diagram: Emergency Scenario}
+\begin{lstlisting}
+@startuml
+participant "SimulationEngine" as SE
+participant "EmergencyController" as EC
+participant "RobotController" as RC
+participant "CrowdController" as CC
+participant "MetricsCollector" as MC
+
+SE -> EC: detect_emergency_condition()
+EC -> SE: trigger_emergency_mode()
+SE -> RC: broadcast_emergency_alert()
+RC -> Robot: set_emergency_behavior()
+Robot -> Robot: move_to_safe_position()
+SE -> CC: initiate_evacuation()
+CC -> Pedestrian: signal_evacuation()
+Pedestrian -> Pedestrian: select_nearest_exit()
+Pedestrian -> Pedestrian: navigate_to_exit()
+
+loop Every Time Step
+    Pedestrian -> Pedestrian: update_position()
+    Robot -> Robot: update_position()
+    SE -> MC: record_interactions()
+end
+
+SE -> EC: check_emergency_clear()
+EC -> SE: end_emergency_mode()
+SE -> RC: resume_normal_operations()
+SE -> MC: generate_emergency_report()
+@enduml
+\end{lstlisting}
+
+
+
+\section{Instructor Approval Justification}
+
+This project represents a substantial computational modeling effort through:
+\begin{enumerate}
+    \item \textbf{Complex System Integration}: Combining two distinct simulation domains (logistics and crowd dynamics) requires sophisticated agent coordination and interaction modeling \cite{shaheen2019human, macal2010tutorial}.
+    \item \textbf{Algorithm Implementation}: Custom implementations of A* pathfinding \cite{hart1968formal}, Social Force Model \cite{helbing1995social}, and task assignment heuristics \cite{boysen2019warehouse} demonstrate deep algorithmic understanding.
+    \item \textbf{Python Programming}: The entire simulation framework will be built from scratch in Python without relying on pre-built simulation libraries, ensuring comprehensive understanding of simulation principles \cite{law2015simulation}.
+    \item \textbf{Research Integration}: The hybrid approach addresses current research questions about human-robot interaction in shared environments \cite{shaheen2019human, pan2007human}.
+    \item \textbf{Scalability}: The modular design allows for extension to larger environments, more agents, and additional simulation features \cite{macal2010tutorial}.
+\end{enumerate}
+
+\section{Repository Information}
+GitHub Repository: \url{https://github.com/KhoaTran1111/https-github.com-khoatran-cs4632-hybrid-simulation/blob/main/Khoa%20Tran}
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
+
+\end{document}
+```
+
+```bibtex
+@article{boysen2019warehouse,
+  title={Warehouse automation and robotized storage systems: A survey},
+  author={Boysen, Nils and de Koster, Ren{\'e} and Weidinger, Felix},
+  journal={Operations Research},
+  volume={67},
+  number={4},
+  pages={915--947},
+  year={2019},
+  publisher={INFORMS}
+}
+
+@inproceedings{wurman2008coordinating,
+  title={Coordinating hundreds of cooperative, autonomous vehicles in warehouses},
+  author={Wurman, Peter R and D'Andrea, Raffaello and Mountz, Mick},
+  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
+  volume={22},
+  number={1},
+  pages={1752--1760},
+  year={2008}
+}
+
+@article{helbing1995social,
+  title={Social force model for pedestrian dynamics},
+  author={Helbing, Dirk and Moln{\'a}r, Peter},
+  journal={Physical Review E},
+  volume={51},
+  number={5},
+  pages={4282--4286},
+  year={1995},
+  publisher={APS}
+}
+
+@inproceedings{pan2007human,
+  title={Human and social behavior in evacuation simulation},
+  author={Pan, Xuebo and Han, Charles and Dauber, Kathleen and Law, Kincho},
+  booktitle={Proceedings of the 2007 ACM Symposium on Virtual Reality Software and Technology},
+  pages={9--16},
+  year={2007}
+}
+
+@article{gwynne1999review,
+  title={A review of evacuation models},
+  author={Gwynne, Steven and Galea, Edwin and Owen, Mark and Lawrence, Peter},
+  journal={Fire Safety Science},
+  volume={5},
+  pages={237--247},
+  year={1999}
+}
+
+@inproceedings{hart1968formal,
+  title={A formal basis for the heuristic determination of minimum cost paths},
+  author={Hart, Peter E and Nilsson, Nils J and Raphael, Bertram},
+  booktitle={IEEE Transactions on Systems Science and Cybernetics},
+  volume={4},
+  number={2},
+  pages={100--107},
+  year={1968},
+  organization={IEEE}
+}
+
+@article{reynolds1999steering,
+  title={Steering behaviors for autonomous characters},
+  author={Reynolds, Craig W},
+  journal={Game developers conference},
+  volume={1999},
+  pages={763--782},
+  year={1999}
+}
+
+@article{macal2010tutorial,
+  title={Tutorial on agent-based modelling and simulation},
+  author={Macal, Charles M and North, Michael J},
+  journal={Journal of Simulation},
+  volume={4},
+  number={3},
+  pages={151--162},
+  year={2010},
+  publisher={Springer}
+}
+
+@article{shaheen2019human,
+  title={Human-robot interaction in shared workspaces: A survey},
+  author={Shaheen, Sara and Saeed, Muhammad and Awwad, Sami},
+  journal={IEEE Access},
+  volume={7},
+  pages={136966--136981},
+  year={2019},
+  publisher={IEEE}
+}
+
+@book{law2015simulation,
+  title={Simulation Modeling and Analysis},
+  author={Law, Averill M},
+  year={2015},
+  publisher={McGraw-Hill Education}
+}
+```
