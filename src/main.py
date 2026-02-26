@@ -16,7 +16,9 @@ def main():
     pedestrians = [Pedestrian(i, (random.randint(0,19), random.randint(10,19)), exit_pos)
                    for i in range(5)]
 
-    sim = SimulationEngine(env, robots, pedestrians, max_steps=200)
+    inventory = InventoryManager()
+
+    sim = SimulationEngine(env, robots, pedestrians, inventory, max_steps=200)
     sim.run()
 
 if __name__ == "__main__":
