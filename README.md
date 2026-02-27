@@ -9,37 +9,58 @@ This project proposes a custom-built development simulation of warehouse operati
 **Current Status (Milestone 2):** Core simulation framework and foundational models are implemented.
 
 - **What's Implemented:**
-    - Core `SimulationEngine` with discrete-time stepping and mode switching (Normal/Emergency).
-    - `EnvironmentGrid` for representing the 2D warehouse space.
-    - Agent base classes: `Robot` and `Pedestrian`.
-    - **Model 1:** A* pathfinding algorithm for agents to navigate the grid.
-    - **Model 2:** Basic Social Force Model calculations for pedestrian interactions.
-    - Initial data collection mechanisms in `MetricsCollector` to track robot positions and pedestrian counts.
-    - Configuration loading from YAML files.
+
+   * Core Simulation Framework
++ Discrete-time simulation engine
++ Global clock and step-based updates
++ Emergency mode switching
++ Metric collection system
+
+    * Warehouse Logistics Components
++ Robot agent class with task queue
++ A* pathfinding algorithm for robot navigation
++ Task generation and assignment
++ Nearest-robot task dispatch heuristic
++ InventoryManager with (Q, r) continuous review policy
++ Stochastic order generation
+
+    * Crowd Dynamics Components
++ Pedestrian agent class
++ Simplified Social Force Model
++ Exit-directed evacuation behavior
++ Neighbor-based collision avoidance
++ Emergency-triggered evacuation mode
+
+    *  Interaction Features
++ Shared grid-based warehouse environment
++ Robots halt during emergency
++ Pedestrians evacuate using force-based navigation
++ Evacuation completion detection
 
 - **What's Still to Come:**
-    - Task assignment and scheduling logic in `TaskDispatcher`.
-    - Inventory management and (Q, r) policy in `InventoryManager`.
-    - Full integration of emergency behavior for robots (moving to safe positions).
-    - More sophisticated pedestrian exit selection algorithms.
-    - Comprehensive metric analysis and reporting (evacuation time, throughput, etc.).
-    - Visualization/GUI for the simulation.
+
++ Advanced task assignment heuristics (load balancing comparison)
++ Battery management system for robots
++ Robot safe-zone routing during emergencies
++ Dynamic congestion analysis
++ CSV export of performance metrics
++ Visualization/animation module
++ Comparative performance experiments
 
 - **Changes from Original Proposal:**
     - The simulation engine was changed from a pure event-based system to a time-stepped system for easier synchronization between agent types and simpler implementation of the Social Force Model.
-    - YAML was chosen for configuration over command-line arguments for better organization of numerous simulation parameters.
 
 ## Installation Instructions
 
 1.  **Clone the Repository:**
     ```bash
-    git clone https://github.com/KhoaTran1111/khoatran-cs4632-hybrid-sim.git
-    cd khoatran-cs4632-hybrid-sim
+    git clone https://github.com/KhoaTran1111/khoatran-cs4632-hybrid-simulation.git
+    cd khoatran-cs4632-hybrid-simulation
     ```
 
 2.  **Set up a Virtual Environment (Recommended):**
     ```bash
-    python3 -m venv venv
+    python3 -m venv env
     source venv/bin/activate  # On Windows use `venv\Scripts\activate`
     ```
 
@@ -49,8 +70,7 @@ This project proposes a custom-built development simulation of warehouse operati
     ```
 
 - **Troubleshooting:**
-    - If you encounter issues with `pyyaml`, ensure you have a C compiler installed or try `pip install --only-binary=pyyaml pyyaml`.
-    - Make sure you are using Python 3.8 or higher.
+    If you encounter issues with `numpy`, ensure you have a Python compiler installed and try `pip install numpy`.
 
 ## Usage
 

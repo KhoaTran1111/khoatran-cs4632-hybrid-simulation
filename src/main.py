@@ -3,15 +3,13 @@ from core.environment import EnvironmentGrid
 from agents.robot import Robot
 from agents.pedestrian import Pedestrian
 from core.engine import SimulationEngine
+from managers.inventory import InventoryManager
 
 def main():
     env = EnvironmentGrid(20, 20, obstacle_ratio=0.1)
 
     robots = [Robot(i, (random.randint(0,19), random.randint(0,19))) for i in range(3)]
-    for r in robots:
-        goal = (random.randint(0,19), random.randint(0,19))
-        r.assign_goal(goal, env)
-
+   
     exit_pos = (10, 0)
     pedestrians = [Pedestrian(i, (random.randint(0,19), random.randint(10,19)), exit_pos)
                    for i in range(5)]
