@@ -3,7 +3,6 @@ from core.environment import EnvironmentGrid
 from agents.robot import Robot
 from agents.pedestrian import Pedestrian
 from core.engine import SimulationEngine
-from managers.inventory import InventoryManager
 
 def main():
     env = EnvironmentGrid(20, 20, obstacle_ratio=0.1)
