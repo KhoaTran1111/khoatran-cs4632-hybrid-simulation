@@ -1,20 +1,6 @@
-# Python
-__pycache__/
-*.py[cod]
-*.so
-.Python
-env/
-venv/
-.env
-*.log
+results/
 *.csv
-*.png
-*.jpg
-
-# IDE
-.vscode/
-.idea/
-
-# OS
-.DS_Store
-Thumbs.db
+*.json
+__pycache__/
+*.pyc
+venv/
