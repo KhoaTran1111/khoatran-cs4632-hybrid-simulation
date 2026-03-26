@@ -11,7 +11,7 @@ class Task:
 class TaskDispatcher:
     def __init__(self, robots, env):
         self.robots = robots
-        self.env = env               # ← added
+        self.env = env               
         self.pending_tasks = []
         self.completed_tasks = 0
         self.task_counter = 0
@@ -33,5 +33,5 @@ class TaskDispatcher:
         for robot in idle_robots:
             if self.pending_tasks:
                 task = self.pending_tasks.pop(0)
-                robot.assign_goal(task.location, self.env)   # ← now pass env
+                robot.assign_goal(task.location, self.env)
                 task.assigned_to = robot.id

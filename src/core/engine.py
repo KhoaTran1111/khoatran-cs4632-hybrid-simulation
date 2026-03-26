@@ -16,13 +16,13 @@ class SimulationEngine:
         self.emergency_mode = False
         self.trigger_step = config['emergency']['trigger_step']
 
-        # Environment (make it an attribute so others can use it)
+        # Environment
         self.grid_w = config['simulation']['grid_width']
         self.grid_h = config['simulation']['grid_height']
         self.walls = config['warehouse']['shelves']
         self.exits = config['warehouse']['exits']
 
-        # Create environment object (you need this class)
+        # Create environment object
         self.env = EnvironmentGrid(self.grid_w, self.grid_h, self.walls)
 
         # Agents
@@ -30,9 +30,9 @@ class SimulationEngine:
         self.pedestrians = []
         self._init_agents()
 
-        # Models & managers – now pass env
+        # Models & managers
         self.sf_model = SocialForceModel()
-        self.dispatcher = TaskDispatcher(self.robots, self.env)   # ← changed
+        self.dispatcher = TaskDispatcher(self.robots, self.env)
 
         # Metrics
         self.metrics = MetricsCollector(config['metrics']['output_dir'], self.time)
@@ -76,7 +76,7 @@ class SimulationEngine:
             for r in self.robots:
                 r.step(self.env)
             for p in self.pedestrians:
-                p.step_normal([], self.sf_model, self.walls)  # add normal behavior if needed
+                p.step_normal([], self.sf_model, self.walls)
 
         else:
             # Emergency: robots retreat, pedestrians evacuate fast
