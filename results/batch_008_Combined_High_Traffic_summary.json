@@ -1,0 +1,9 @@
+{
+  "total_steps": 2000,
+  "evacuation_time": "Incomplete",
+  "total_distance_robots": 2041,
+  "tasks_completed": 107,
+  "orders_generated": 260,
+  "utilization": 0.535,
+  "throughput": 0.0
+}
