@@ -84,22 +84,26 @@ This project proposes a custom-built development simulation of warehouse operati
     ```
 
 3.  **Expected Output/Behavior:**
-    - The console will print the simulation step, mode (Normal/Emergency), and basic metrics like the number of active robots and their positions.
-    - Upon completion, a summary report will be printed to the console, and raw data files (e.g., `position_log.csv`) may be generated in the project root for further analysis with tools like Excel or Python scripts.
+    *   Console output includes:
+
++ Task completion logs
++ Inventory reorder messages
++ Emergency trigger notification
++ Final performance metrics
 
 ## Architecture Overview
 
 The simulation is organized into several key components that directly map to the UML class diagram from the proposal.
 
-- **`core`**: Contains the main simulation orchestrator (`SimulationEngine`) and the shared environment (`EnvironmentGrid`). The `SimulationEngine` controls the main loop, time progression, and mode changes.
+- **`core`**: Contains the main simulation orchestrator (`SimulationEngine`) and the shared environment (`EnvironmentGrid`) which navigate and detect neighbor, obstacles. The `SimulationEngine` controls the main loop, time progression, manages mode changes and records metrics.
 - **`agents`**: Houses the `Robot` and `Pedestrian` classes. These agents hold their own state (position, velocity, etc.) and have methods to update themselves based on internal logic and the environment.
 - **`models`**: This package holds the core algorithmic implementations.
-    - `pathfinding.py`: Implements the A* algorithm, used by agents to find paths to goals.
-    - `social_force.py`: Implements the calculations for the Social Force Model, used by pedestrians to determine their movement based on interactions with others and obstacles.
+    - `pathfinding.py`: Implements the A* algorithm, used by agents to find paths to goals for robot.
+    - `social_force.py`: Implements the calculations for the Ssocial Force Model, used by pedestrians to determine their movement based on interactions with others and obstacles.
 - **`managers`**: Contains centralized controllers for specific subsystems.
     - `task_dispatcher.py`: (Planned) Will manage and assign tasks to robots.
     - `inventory_manager.py`: (Planned) Will manage stock levels and reordering.
-- **`utils`**: Provides helper modules like `data_collector.py`, which is responsible for logging agent states and simulation events for later analysis.
+- **`utils`**: Provides helper modules like `metrics.py`, which is responsible for logging agent states and records robot distance, evacuation time.
 
 **Architectural Changes:**
 The primary change is the consolidation of the "Crowd Controller" logic directly into the `Pedestrian` agent's behavior and the `SimulationEngine`'s emergency mode trigger. This simplifies the initial implementation while keeping the core interaction logic intact.

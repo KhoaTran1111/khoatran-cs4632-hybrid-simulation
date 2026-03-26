@@ -1,64 +1,110 @@
+import numpy as np
 import random
-from utils.metrics import Metrics
-from managers.dispatcher import TaskDispatcher
-from managers.order_generator import OrderGenerator
+from agents.robot import Robot
+from agents.pedestrian import Pedestrian
+from algorithms.pathfinding import astar_search
+from algorithms.social_force import SocialForceModel
+from managers.task_dispatcher import TaskDispatcher
+from utils.metrics import MetricsCollector
+from core.environment import EnvironmentGrid
 
 class SimulationEngine:
-    def __init__(self, env, robots, pedestrians, inventory, max_steps=200):
-        self.env = env
-        self.robots = robots
-        self.pedestrians = pedestrians
-        self.inventory = inventory
-        self.dispatcher = TaskDispatcher(robots)
-        self.order_generator = OrderGenerator(env, inventory)
-
+    def __init__(self, config):
+        self.config = config
         self.time = 0
-        self.max_steps = max_steps
+        self.max_steps = config['simulation']['max_steps']
         self.emergency_mode = False
-        self.metrics = Metrics()
+        self.trigger_step = config['emergency']['trigger_step']
+
+        # Environment (make it an attribute so others can use it)
+        self.grid_w = config['simulation']['grid_width']
+        self.grid_h = config['simulation']['grid_height']
+        self.walls = config['warehouse']['shelves']
+        self.exits = config['warehouse']['exits']
+
+        # Create environment object (you need this class)
+        self.env = EnvironmentGrid(self.grid_w, self.grid_h, self.walls)
+
+        # Agents
+        self.robots = []
+        self.pedestrians = []
+        self._init_agents()
+
+        # Models & managers – now pass env
+        self.sf_model = SocialForceModel()
+        self.dispatcher = TaskDispatcher(self.robots, self.env)   # ← changed
+
+        # Metrics
+        self.metrics = MetricsCollector(config['metrics']['output_dir'], self.time)
+
+        random.seed(config['simulation']['random_seed'])
+        np.random.seed(config['simulation']['random_seed'])
+
+    def _init_agents(self):
+        for i in range(self.config['agents']['num_robots']):
+            pos = [random.randint(2, self.grid_w-3), random.randint(2, self.grid_h-3)]
+            self.robots.append(Robot(i, pos))
+
+        for i in range(self.config['agents']['num_pedestrians']):
+            pos = [random.randint(5, self.grid_w-6), random.randint(5, self.grid_h-6)]
+            exit_pos = random.choice(self.exits)
+            self.pedestrians.append(Pedestrian(i, pos, exit_pos))
 
     def trigger_emergency(self):
-        print("EMERGENCY TRIGGERED")
+        print(f"EMERGENCY TRIGGERED at step {self.time}")
         self.emergency_mode = True
-        self.inventory.set_emergency_mode(True)
+        for r in self.robots:
+            r.emergency_retreat(self._get_nearest_safe_zone(r.position), self.env)
+
+    def _get_nearest_safe_zone(self, pos):
+        safe = self.config['emergency']['safe_zones']
+        dists = [np.linalg.norm(np.array(pos) - np.array(s)) for s in safe]
+        return safe[np.argmin(dists)]
 
     def step(self):
         self.time += 1
 
-        # Generate random orders in normal mode
-        if not self.emergency_mode and random.random() < 0.2:
-            task = self.order_generator.generate_order()
-            self.dispatcher.add_task(task)
+        # Generate new orders (Poisson)
+        if np.random.random() < self.config['orders']['arrival_rate']:
+            self.dispatcher.generate_order_task()
 
-        # Assign tasks
+        # Dispatch tasks to idle robots
+        self.dispatcher.assign_tasks()
+
         if not self.emergency_mode:
-            self.dispatcher.assign_tasks(self.env)
-
-        # Move robots
-        for r in self.robots:
-            r.step(self.env, self.emergency_mode)
-
-        # Pedestrian evacuation
-        if self.emergency_mode:
+            # Normal mode: robots work, pedestrians wander or move slowly
+            for r in self.robots:
+                r.step(self.env)
             for p in self.pedestrians:
-                neighbors = [other.position for other in self.pedestrians if other != p]
-                p.step(neighbors)
+                p.step_normal([], self.sf_model, self.walls)  # add normal behavior if needed
 
-            if all(p.evacuated for p in self.pedestrians):
-                self.metrics.record_evacuation(self.time)
-                return False
+        else:
+            # Emergency: robots retreat, pedestrians evacuate fast
+            for r in self.robots:
+                r.step_emergency()
+            for p in self.pedestrians:
+                neighbors_pos = [other.position for other in self.pedestrians if other != p]
+                p.step_evacuate(neighbors_pos, self.sf_model, self.walls)
 
-        if self.time == 80:
-            self.trigger_emergency()
-
-        if self.time >= self.max_steps:
+        # Check evacuation complete
+        if self.emergency_mode and all(p.evacuated for p in self.pedestrians):
+            self.metrics.record_evacuation_time(self.time)
             return False
 
-        return True
+        # Log metrics every interval
+        if self.time % self.config['metrics']['log_interval'] == 0:
+            self.metrics.log_timeseries(self.time, self.robots, self.pedestrians, self.dispatcher)
+
+        if self.time == self.trigger_step:
+            self.trigger_emergency()
+
+        return self.time < self.max_steps
 
     def run(self):
         while self.step():
-            pass
+            if self.time % 100 == 0:
+                print(f"Step {self.time} | Emergency: {self.emergency_mode} | Active orders: {len(self.dispatcher.pending_tasks)}")
 
-        self.metrics.record_robot(self.robots)
-        self.metrics.report()
+        self.metrics.final_summary(self.robots, self.pedestrians, self.dispatcher, self.time)
+        self.metrics.save_all()
+        print("Simulation complete.")
