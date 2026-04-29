@@ -68,34 +68,27 @@ class SimulationEngine:
         if np.random.random() < self.config['orders']['arrival_rate']:
             self.dispatcher.generate_order_task()
 
-        # Dispatch tasks to idle robots
+        # === KEY FIX: Proactive task assignment every step ===
         self.dispatcher.assign_tasks()
 
         if not self.emergency_mode:
-            # Normal mode: robots work, pedestrians wander or move slowly
+            # Normal mode - robots work
             for r in self.robots:
                 r.step(self.env)
-            for p in self.pedestrians:
-                p.step_normal([], self.sf_model, self.walls)
-
         else:
-            # Emergency: robots retreat, pedestrians evacuate fast
+            # Emergency mode
             for r in self.robots:
                 r.step_emergency()
             for p in self.pedestrians:
-                neighbors_pos = [other.position for other in self.pedestrians if other != p]
-                p.step_evacuate(neighbors_pos, self.sf_model, self.walls)
+                neighbors = [other.position for other in self.pedestrians if other != p]
+                p.step_evacuate(neighbors, self.sf_model, self.walls)
 
-        # Check evacuation complete
-        if self.emergency_mode and all(p.evacuated for p in self.pedestrians):
-            self.metrics.record_evacuation_time(self.time)
-            return False
-
-        # Log metrics every interval
+        # Log metrics
         if self.time % self.config['metrics']['log_interval'] == 0:
             self.metrics.log_timeseries(self.time, self.robots, self.pedestrians, self.dispatcher)
 
-        if self.time == self.trigger_step:
+        # Trigger emergency
+        if self.time == self.trigger_step and not self.emergency_mode:
             self.trigger_emergency()
 
         return self.time < self.max_steps
