@@ -27,7 +27,7 @@ def run_batch():
     ]
 
     os.makedirs("results/batch", exist_ok=True)
-    print("🚀 Starting Batch Simulations for Milestone 3...\n")
+    print("🚀 Starting Batch Simulations for Milestone 5...\n")
 
     results_summary = []
 

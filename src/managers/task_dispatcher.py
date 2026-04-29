@@ -45,5 +45,4 @@ class TaskDispatcher:
     def update_completed_tasks(self):
         """Check if any assigned tasks are completed"""
         for task in self.pending_tasks[:]:
-            # This is simplified - in real version you would check robot position
             pass
