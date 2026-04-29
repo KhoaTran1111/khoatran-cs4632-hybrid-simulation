@@ -1,7 +1,7 @@
 {
   "total_steps": 2000,
   "evacuation_time": "Incomplete",
-  "total_distance_robots": 768,
+  "total_distance_robots": 1005,
   "tasks_completed": 40,
   "orders_generated": 105,
   "utilization": 0.2,
