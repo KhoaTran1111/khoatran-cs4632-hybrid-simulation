@@ -6,49 +6,29 @@ This project proposes a custom-built development simulation of warehouse operati
 
 ## Project Status
 
-**Current Status (Milestone 2):** Core simulation framework and foundational models are implemented.
+**Current Status (Milestone 5):** Final Report
 
-- **What's Implemented:**
+Key features include:
+- Time-stepped discrete simulation engine
+- A* pathfinding for robot navigation
+- Enhanced Social Force Model for realistic pedestrian movement and evacuation
+- Configurable emergency mode with robot retreat to safe zones
+- Proactive task dispatcher to improve robot utilization
+- Comprehensive metrics collection and batch experimentation
+- YAML-based configuration system
 
-   * Core Simulation Framework
-+ Discrete-time simulation engine
-+ Global clock and step-based updates
-+ Emergency mode switching
-+ Metric collection system
+---
 
-    * Warehouse Logistics Components
-+ Robot agent class with task queue
-+ A* pathfinding algorithm for robot navigation
-+ Task generation and assignment
-+ Nearest-robot task dispatch heuristic
-+ InventoryManager with (Q, r) continuous review policy
-+ Stochastic order generation
+## Features
 
-    * Crowd Dynamics Components
-+ Pedestrian agent class
-+ Simplified Social Force Model
-+ Exit-directed evacuation behavior
-+ Neighbor-based collision avoidance
-+ Emergency-triggered evacuation mode
+- **Hybrid Agent Interaction**: Robots and pedestrians coexist in a shared grid environment
+- **Emergency Simulation**: Robots retreat to safe zones; pedestrians evacuate using Social Force
+- **Order Fulfillment**: Poisson order generation with proactive task assignment
+- **High Configurability**: All parameters (grid size, agent counts, order rate, emergency timing, etc.) are controlled via YAML
+- **Detailed Analysis**: Time-series logging, sensitivity analysis, and scenario testing
+- **Improved Utilization**: Proactive dispatching significantly reduces robot idle time
 
-    *  Interaction Features
-+ Shared grid-based warehouse environment
-+ Robots halt during emergency
-+ Pedestrians evacuate using force-based navigation
-+ Evacuation completion detection
-
-- **What's Still to Come:**
-
-+ Advanced task assignment heuristics (load balancing comparison)
-+ Battery management system for robots
-+ Robot safe-zone routing during emergencies
-+ Dynamic congestion analysis
-+ CSV export of performance metrics
-+ Visualization/animation module
-+ Comparative performance experiments
-
-- **Changes from Original Proposal:**
-    - The simulation engine was changed from a pure event-based system to a time-stepped system for easier synchronization between agent types and simpler implementation of the Social Force Model.
+---
 
 ## Installation Instructions
 
@@ -104,6 +84,3 @@ The simulation is organized into several key components that directly map to the
     - `task_dispatcher.py`: (Planned) Will manage and assign tasks to robots.
     - `inventory_manager.py`: (Planned) Will manage stock levels and reordering.
 - **`utils`**: Provides helper modules like `metrics.py`, which is responsible for logging agent states and records robot distance, evacuation time.
-
-**Architectural Changes:**
-The primary change is the consolidation of the "Crowd Controller" logic directly into the `Pedestrian` agent's behavior and the `SimulationEngine`'s emergency mode trigger. This simplifies the initial implementation while keeping the core interaction logic intact.
