@@ -1,24 +1,29 @@
+# src/utils/metrics.py
 import os
 import json
 import pandas as pd
 
 class MetricsCollector:
-    def __init__(self, output_dir, start_time=0):
+    """Collects and saves simulation metrics"""
+
+    def __init__(self, output_dir="results", run_id=None):
         self.output_dir = output_dir
+        self.run_id = run_id or f"run_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}"
         os.makedirs(output_dir, exist_ok=True)
-        self.run_id = f"run_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}"
+        
         self.timeseries = []
-        self.evacuation_time = None
         self.summary = {}
+        self.evacuation_time = None
 
     def log_timeseries(self, time, robots, pedestrians, dispatcher):
         data = {
             'time': time,
-            'active_robots': len([r for r in robots if r.goal is not None]),
-            'distance_traveled_total': sum(r.distance_traveled for r in robots),
-            'tasks_completed': sum(r.tasks_completed for r in robots),
-            'pending_orders': len(dispatcher.pending_tasks),
-            'pedestrians_remaining': sum(1 for p in pedestrians if not p.evacuated),
+            'active_robots': sum(1 for r in robots if getattr(r, 'goal', None) is not None or 
+                                getattr(r, 'emergency_goal', None) is not None),
+            'distance_traveled_total': sum(getattr(r, 'distance_traveled', 0) for r in robots),
+            'tasks_completed': sum(getattr(r, 'tasks_completed', 0) for r in robots),
+            'pending_orders': len(getattr(dispatcher, 'pending_tasks', [])),
+            'pedestrians_remaining': sum(1 for p in pedestrians if not getattr(p, 'evacuated', True)),
         }
         self.timeseries.append(data)
 
@@ -26,21 +31,28 @@ class MetricsCollector:
         self.evacuation_time = time
 
     def final_summary(self, robots, pedestrians, dispatcher, final_time):
+        total_tasks = sum(getattr(r, 'tasks_completed', 0) for r in robots)
+        num_robots = len(robots)
+        
         self.summary = {
             'total_steps': final_time,
-            'evacuation_time': self.evacuation_time if self.evacuation_time else "Incomplete",
-            'total_distance_robots': sum(r.distance_traveled for r in robots),
-            'tasks_completed': sum(r.tasks_completed for r in robots),
-            'orders_generated': dispatcher.task_counter,
-            'utilization': sum(r.tasks_completed for r in robots) / (len(robots) * final_time / 100) if final_time > 0 else 0,
-            'throughput': dispatcher.completed_tasks / final_time if final_time > 0 else 0,
+            'evacuation_time': self.evacuation_time if self.evacuation_time is not None else "Incomplete",
+            'tasks_completed': total_tasks,
+            'total_distance': sum(getattr(r, 'distance_traveled', 0) for r in robots),
+            'utilization': round((total_tasks / (num_robots * final_time) * 100), 2) if final_time > 0 else 0.0,
+            'throughput': round(total_tasks / final_time, 4) if final_time > 0 else 0.0,
+            'pending_orders': len(getattr(dispatcher, 'pending_tasks', [])),
+            'robots_count': num_robots,
         }
 
     def save_all(self):
-        df_ts = pd.DataFrame(self.timeseries)
-        df_ts.to_csv(os.path.join(self.output_dir, f"{self.run_id}_timeseries.csv"), index=False)
+        # Save time-series
+        if self.timeseries:
+            df = pd.DataFrame(self.timeseries)
+            df.to_csv(os.path.join(self.output_dir, f"{self.run_id}_timeseries.csv"), index=False)
 
+        # Save summary
         with open(os.path.join(self.output_dir, f"{self.run_id}_summary.json"), 'w') as f:
             json.dump(self.summary, f, indent=2)
 
-        print(f"Results saved to {self.output_dir}")
+        print(f"✅ Results saved for run: {self.run_id}")
