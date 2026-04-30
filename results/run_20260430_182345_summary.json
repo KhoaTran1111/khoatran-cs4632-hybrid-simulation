@@ -2,10 +2,10 @@
   "total_steps": 2000,
   "evacuation_time": "Not triggered",
   "evacuation_status": "Incomplete",
-  "tasks_completed": 12,
-  "total_distance": 460,
-  "utilization": 0.06,
-  "throughput": 0.006,
-  "pending_orders": 21,
+  "tasks_completed": 40,
+  "total_distance": 1066,
+  "utilization": 0.2,
+  "throughput": 0.02,
+  "pending_orders": 64,
   "robots_count": 10
 }

@@ -1,6 +1,7 @@
 {
   "total_steps": 2000,
-  "evacuation_time": "Incomplete",
+  "evacuation_time": "Not triggered",
+  "evacuation_status": "Incomplete",
   "tasks_completed": 17,
   "total_distance": 543,
   "utilization": 0.08,

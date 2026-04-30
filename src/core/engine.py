@@ -108,18 +108,44 @@ class SimulationEngine:
         return self.time < self.max_steps
 
     def run(self):
-        print(f"Starting simulation with {len(self.robots)} robots and {len(self.pedestrians)} pedestrians...")
-        
+        print(f"Starting simulation with {len(self.robots)} robots and {len(self.pedestrians)} pedestrians...\n")
+
+        emergency_triggered = False
+        emergency_time = None
+
         while self.step():
-            if self.time % 200 == 0:
+            if self.time % 200 == 0 or self.time == self.trigger_step:
+                peds_left = sum(1 for p in self.pedestrians if not p.evacuated)
                 print(f"Step {self.time:4d} | Emergency: {self.emergency_mode} | "
                       f"Active Robots: {sum(1 for r in self.robots if r.is_busy())} | "
-                      f"Pending Orders: {len(self.dispatcher.pending_tasks)}")
+                      f"Pending Orders: {len(self.dispatcher.pending_tasks)} | "
+                      f"Pedestrians Left: {peds_left}")
 
-        # Final summary
+            # Trigger emergency
+            if self.time == self.trigger_step and not self.emergency_mode:
+                self.trigger_emergency()
+                emergency_triggered = True
+                emergency_time = self.time
+
+        # === FINAL PROCESSING & EVACUATION RECORDING ===
+        peds_remaining = sum(1 for p in self.pedestrians if not p.evacuated)
+
+        if emergency_triggered:
+            if peds_remaining == 0:
+                self.metrics.record_evacuation_time(self.time)
+                print(f"✅ FULL EVACUATION COMPLETED at step {self.time}")
+            else:
+                # Record the trigger time even if evacuation is incomplete
+                self.metrics.record_evacuation_time(emergency_time)
+                print(f"⚠️  EMERGENCY TRIGGERED at step {emergency_time}, but {peds_remaining} pedestrians still remaining.")
+        else:
+            print("Evacuation Time: Not triggered")
+
+        # Final metrics summary
         self.metrics.final_summary(self.robots, self.pedestrians, self.dispatcher, self.time)
         self.metrics.save_all()
 
-        print("\nSimulation completed successfully!")
-        print(f"Total steps: {self.time}")
-        print(f"Evacuation time: {self.metrics.evacuation_time if self.metrics.evacuation_time else 'Not triggered'}")
+        print("\n" + "="*60)
+        print(f"Simulation finished | Total steps: {self.time}")
+        print(f"Evacuation Time : {self.metrics.evacuation_time}")
+        print("="*60)

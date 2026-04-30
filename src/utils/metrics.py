@@ -28,6 +28,7 @@ class MetricsCollector:
         self.timeseries.append(data)
 
     def record_evacuation_time(self, time):
+        """Record evacuation time (trigger time or completion time)"""
         self.evacuation_time = time
 
     def final_summary(self, robots, pedestrians, dispatcher, final_time):
@@ -36,7 +37,9 @@ class MetricsCollector:
         
         self.summary = {
             'total_steps': final_time,
-            'evacuation_time': self.evacuation_time if self.evacuation_time is not None else "Incomplete",
+            'evacuation_time': self.evacuation_time if self.evacuation_time is not None else "Not triggered",
+            'evacuation_status': "Complete" if (self.evacuation_time and 
+                                               sum(1 for p in pedestrians if not getattr(p, 'evacuated', False)) == 0) else "Incomplete",
             'tasks_completed': total_tasks,
             'total_distance': sum(getattr(r, 'distance_traveled', 0) for r in robots),
             'utilization': round((total_tasks / (num_robots * final_time) * 100), 2) if final_time > 0 else 0.0,
