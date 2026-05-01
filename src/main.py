@@ -1,4 +1,3 @@
-# src/main.py
 import yaml
 from core.engine import SimulationEngine
 

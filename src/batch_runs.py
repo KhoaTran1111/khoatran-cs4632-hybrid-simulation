@@ -1,4 +1,3 @@
-# src/batch_runs.py
 import yaml
 import copy
 import os
@@ -33,7 +32,7 @@ def run_batch():
     for i, scen in enumerate(scenarios, 1):
         config = copy.deepcopy(base_config)
 
-        # Apply changes (support nested dictionaries)
+        # Apply changes
         for section, changes in scen["changes"].items():
             if section in config and isinstance(changes, dict):
                 config[section].update(changes)

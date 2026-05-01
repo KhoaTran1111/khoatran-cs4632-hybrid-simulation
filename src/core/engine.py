@@ -2,11 +2,10 @@ import numpy as np
 import random
 from agents.robot import Robot
 from agents.pedestrian import Pedestrian
-from algorithms.pathfinding import astar_search
 from algorithms.social_force import SocialForceModel
 from managers.task_dispatcher import TaskDispatcher
 from core.environment import EnvironmentGrid
-from utils.metrics import MetricsCollector   # This should now work
+from utils.metrics import MetricsCollector
 
 
 class SimulationEngine:
@@ -77,7 +76,7 @@ class SimulationEngine:
         if np.random.random() < self.config['orders'].get('arrival_rate', 0.05):
             self.dispatcher.generate_order_task()
 
-        # Proactive task assignment - this is the key improvement
+        # Proactive task assignment
         self.dispatcher.assign_tasks()
 
         if not self.emergency_mode:
@@ -110,42 +109,39 @@ class SimulationEngine:
     def run(self):
         print(f"Starting simulation with {len(self.robots)} robots and {len(self.pedestrians)} pedestrians...\n")
 
-        emergency_triggered = False
-        emergency_time = None
+        emergency_triggered_at = None
 
         while self.step():
             if self.time % 200 == 0 or self.time == self.trigger_step:
-                peds_left = sum(1 for p in self.pedestrians if not p.evacuated)
+                peds_left = sum(1 for p in self.pedestrians if not getattr(p, 'evacuated', False))
                 print(f"Step {self.time:4d} | Emergency: {self.emergency_mode} | "
-                      f"Active Robots: {sum(1 for r in self.robots if r.is_busy())} | "
-                      f"Pending Orders: {len(self.dispatcher.pending_tasks)} | "
+                      f"Active Robots: {sum(1 for r in self.robots if getattr(r, 'is_busy', lambda: False)())} | "
                       f"Pedestrians Left: {peds_left}")
 
             # Trigger emergency
             if self.time == self.trigger_step and not self.emergency_mode:
                 self.trigger_emergency()
-                emergency_triggered = True
-                emergency_time = self.time
+                emergency_triggered_at = self.time
 
-        # === FINAL PROCESSING & EVACUATION RECORDING ===
-        peds_remaining = sum(1 for p in self.pedestrians if not p.evacuated)
+        # === FINAL EVACUATION LOGIC - FIXED ===
+        peds_remaining = sum(1 for p in self.pedestrians if not getattr(p, 'evacuated', False))
 
-        if emergency_triggered:
+        if emergency_triggered_at is not None:
             if peds_remaining == 0:
                 self.metrics.record_evacuation_time(self.time)
-                print(f"✅ FULL EVACUATION COMPLETED at step {self.time}")
+                status = f"Completed at step {self.time}"
             else:
-                # Record the trigger time even if evacuation is incomplete
-                self.metrics.record_evacuation_time(emergency_time)
-                print(f"⚠️  EMERGENCY TRIGGERED at step {emergency_time}, but {peds_remaining} pedestrians still remaining.")
+                self.metrics.record_evacuation_time(emergency_triggered_at)
+                status = f"Triggered at step {emergency_triggered_at} ({peds_remaining} peds remaining)"
+            print(f"Evacuation Status: {status}")
         else:
             print("Evacuation Time: Not triggered")
 
-        # Final metrics summary
+        # Save final metrics
         self.metrics.final_summary(self.robots, self.pedestrians, self.dispatcher, self.time)
         self.metrics.save_all()
 
-        print("\n" + "="*60)
-        print(f"Simulation finished | Total steps: {self.time}")
-        print(f"Evacuation Time : {self.metrics.evacuation_time}")
-        print("="*60)
+        print("\n" + "="*70)
+        print(f"SIMULATION FINISHED | Total Steps: {self.time}")
+        print(f"Final Evacuation Time : {self.metrics.evacuation_time}")
+        print("="*70)
