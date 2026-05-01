@@ -3,7 +3,7 @@
   "evacuation_time": "Not triggered",
   "evacuation_status": "Incomplete",
   "tasks_completed": 40,
-  "total_distance": 1041,
+  "total_distance": 1017,
   "utilization": 0.2,
   "throughput": 0.02,
   "pending_orders": 64,
